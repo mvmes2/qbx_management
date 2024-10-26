@@ -5,7 +5,6 @@ local isLoggedIn = LocalPlayer.state.isLoggedIn
 local dynamicMenuItems = {}
 local PlayerJob = {}
 local PlayerGang = {}
-local tab = nil
 
 -- Adds item to the boss/gang menu.
 ---@param menuItem ContextMenuItem Requires args.type to be set to know which menu to place in.
