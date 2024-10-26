@@ -5,7 +5,6 @@ local isLoggedIn = LocalPlayer.state.isLoggedIn
 local dynamicMenuItems = {}
 local PlayerJob = {}
 local PlayerGang = {}
-local tab = nil
 
 -- Adds item to the boss/gang menu.
 ---@param menuItem ContextMenuItem Requires args.type to be set to know which menu to place in.
@@ -155,32 +154,42 @@ end
 -- Opens main boss menu changing function based on the group provided.
 ---@param groupType GroupType
 function OpenBossMenu(groupType)
-    if groupType ~= 'gang' and groupType ~= 'job' or not QBX.PlayerData[groupType].name or not QBX.PlayerData[groupType].isboss then return end
+    local playerHasAnyjobOrGang = QBX.PlayerData[groupType].name
+    local isBoss = exports.mri_Qjobsystem:CheckPlayerIsbossByJobSystemData(groupType, QBX.PlayerData)
+    local isRecruiter = exports.mri_Qjobsystem:CheckPlayerIrecruiterByJobSystemData(groupType, QBX.PlayerData)
 
-    local bossMenu = {
-        {
+    if groupType ~= 'gang' and groupType ~= 'job' or not playerHasAnyjobOrGang then return end
+
+    local bossMenu = {}
+  
+    -- Se for 'boss', mostra o menu completo
+    if isBoss then
+        bossMenu[#bossMenu + 1] = {
             title = groupType == 'gang' and locale('menu.manage_gang') or locale('menu.manage_employees'),
             description = groupType == 'gang' and locale('menu.check_gang') or locale('menu.check_employee'),
             icon = 'list',
             onSelect = function()
                 employeeList(groupType)
             end,
-        },
-        {
+        }
+        -- adiciona os menus dinâmicos
+        for _, menuItem in pairs(dynamicMenuItems) do
+            if string.lower(menuItem.args.type) == groupType then
+                bossMenu[#bossMenu + 1] = menuItem
+            end
+        end
+    end
+
+    -- Todos podem contratar, tanto 'boss' quanto 'recruiter' porém recruiter apenas contrata e nada mais!
+    if isBoss or isRecruiter then
+        bossMenu[#bossMenu + 1] = {
             title = groupType == 'gang' and locale('menu.hire_members') or locale('menu.hire_employees'),
             description = groupType == 'gang' and locale('menu.hire_gang') or locale('menu.hire_civilians'),
             icon = 'hand-holding',
             onSelect = function()
                 showHireMenu(groupType)
             end,
-        },
-    }
-
-
-    for _, menuItem in pairs(dynamicMenuItems) do
-        if string.lower(menuItem.args.type) == groupType then
-            bossMenu[#bossMenu + 1] = menuItem
-        end
+        }
     end
 
     lib.registerContext({
