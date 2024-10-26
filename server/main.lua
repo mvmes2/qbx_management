@@ -93,8 +93,10 @@ lib.callback.register('qbx_management:server:hireEmployee', function(source, emp
 	local player = exports.qbx_core:GetPlayer(source)
     local organizationLabel = player.PlayerData[groupType].label
 	local target = exports.qbx_core:GetPlayer(employee)
+    local isBoss = exports.mri_Qjobsystem:CheckPlayerIsbossByJobSystemData(groupType, player.PlayerData)
+    local isRecruiter = exports.mri_Qjobsystem:CheckPlayerIrecruiterByJobSystemData(groupType, player.PlayerData)
 
-    if not player.PlayerData[groupType].isboss then return end
+    if not (isBoss or isRecruiter) then return end
 
     if not target then
         exports.qbx_core:Notify(source, locale('error.not_around'), 'error')
